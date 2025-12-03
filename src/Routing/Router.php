@@ -1,9 +1,10 @@
 <?php
 namespace Careminate\Routing;
 
+use Exception;
+use Careminate\Logs\Logger;
 use Careminate\Http\Middlewares\Middleware;
 use Careminate\Routing\Contracts\RouterInterface;
-use Exception;
 
 class Router implements RouterInterface
 {
@@ -169,11 +170,11 @@ class Router implements RouterInterface
 
                         return $next($cleanUri);
                     }
-
-                    throw new Exception("Action '{$action}' not found in controller {$controller}");
+                    throw new Logger("Action '{$action}' not found in controller {$controller}");
+                    // throw new Exception("Action '{$action}' not found in controller {$controller}");
                 }
-
-                throw new Exception("Invalid controller type for route '{$route}'");
+                 throw new Logger("Invalid controller type for route '{$route}'");
+                // throw new Exception("Invalid controller type for route '{$route}'");
             }
         }
 
@@ -186,7 +187,7 @@ class Router implements RouterInterface
     protected static function handleFallback(string $uri)
     {
         if (! static::$fallback) {
-            throw new Exception("Route '{$uri}' not found.");
+            throw new Logger("Route '{$uri}' not found.");
         }
 
         $fallback = static::$fallback;
@@ -206,14 +207,14 @@ class Router implements RouterInterface
                 return $instance->handle();
             }
 
-            throw new Exception("Fallback controller must be invokable or provide handle().");
+            throw new Logger("Fallback controller must be invokable or provide handle().");
         }
 
         if (is_array($fallback)) {
             return call_user_func($fallback);
         }
 
-        throw new Exception("Invalid fallback configuration.");
+        throw new Logger("Invalid fallback configuration.");
     }
 
     /**

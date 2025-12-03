@@ -1,5 +1,4 @@
 <?php
-
 namespace Careminate\Routing;
 
 /**
@@ -55,7 +54,8 @@ class Segment
 
         // Decode URL-encoded characters (e.g., %20)
         $path = urldecode($path);
-// dd($path);
+        
+        // dd($path);
         // Normalize ROOT_DIR matching
         if (defined('ROOT_DIR') && ROOT_DIR !== '/' && ROOT_DIR !== '') {
             // Remove only if path actually starts with ROOT_DIR
@@ -100,7 +100,8 @@ class Segment
         }
 
         $segments = explode('/', static::uri());
-// dd($segments);
+       
+        // dd($segments);
         // Remove empty values caused by leading/trailing slashes
         $segments = array_values(array_filter($segments, fn($s) => $s !== ''));
 
@@ -153,7 +154,7 @@ class Segment
      */
     public static function reset(): void
     {
-        static::$cachedUri = null;
+        static::$cachedUri      = null;
         static::$cachedSegments = null;
     }
 }

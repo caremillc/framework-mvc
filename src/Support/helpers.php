@@ -1,6 +1,6 @@
 <?php declare (strict_types = 1);
 
-use Careminate\Http\Resquests\Request;
+use Careminate\Http\Requests\Request;
 
 // start request
 if (! function_exists('base_path')) {
@@ -10,17 +10,25 @@ if (! function_exists('base_path')) {
     }
 }
 
-if (! function_exists('config')) {
-    function config(?string $file = null)
+if (! function_exists('storage_path')) {
+    function storage_path(?string $file = null)
     {
-        $seprate = explode('.', $file);
-        if ((! empty($seprate) && count($seprate) > 1) && ! is_null($file)) {
-            $file = include base_path('config/') . $seprate[0] . '.php';
-            return isset($file[$seprate[1]]) ? $file[$seprate[1]] : $file;
-        }
-        return $file;
+        return ! is_null($file) ? base_path('storage') . '/' . $file : '';
     }
 }
+
+// config() helper to load config files
+if (!function_exists('config')) {
+    function config(string $key, $default = null)
+    {
+        [$file, $k] = array_pad(explode('.', $key, 2), 2, null);
+        $path = base_path("config/{$file}.php");
+        if (!file_exists($path)) return $default;
+        $cfg = include $path;
+        if ($k === null) return $cfg;
+        return $cfg[$k] ?? $default;
+    }
+} 
 
 if (! function_exists('request')) {
     function request(?string $name = null, mixed $default = null)
@@ -77,8 +85,8 @@ if (! function_exists('decrypt')) {
 }
 // end hashes
 
-// start middlewares 
-if (!function_exists('url')) {
+// start middlewares
+if (! function_exists('url')) {
     function url(string $url = ''): string
     {
         return $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . ROOT_DIR . ltrim($url, '/');
@@ -86,3 +94,99 @@ if (!function_exists('url')) {
 }
 
 // end middleware
+
+// start view
+
+if (! function_exists('view')) {
+    /**
+     * Render a view and optionally return or echo the result.
+     *
+     * @param string $view
+     * @param array $data
+     * @param bool $return If true, return the content instead of echoing
+     * @return string|void
+     */
+    function view(string $view, array $data = [], bool $return = false)
+    {
+        $content = \Careminate\Views\View::make($view, $data);
+
+        if ($return) {
+            return $content;
+        }
+
+        echo $content;
+    }
+}
+
+//end view
+
+// start lang
+
+if (! function_exists('trans')) {
+    function trans(?string $trans = null, array | null $attriubtes = []): string | object
+    {
+
+        return
+        ! empty($trans) ? \Careminate\Locales\Lang::get($trans, $attriubtes)
+            : new \Careminate\Locales\Lang;
+    }
+}
+
+// end lang
+
+// start filesystem 
+
+// value() helper
+if (!function_exists('value')) {
+    function value(mixed $value): mixed
+    {
+        return $value instanceof \Closure ? $value() : $value;
+    }
+}
+
+// env() helper
+if (!function_exists('env')) {
+    function env(string $key, $default = null)
+    {
+        $value = $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key);
+
+        if ($value === false || $value === null) {
+            return $default;
+        }
+
+        if (is_string($value)) {
+            $value = preg_replace('/\s+#.*/', '', $value);
+            $value = trim($value, " \t\n\r\0\x0B\"'");
+        }
+
+        switch (strtolower((string)$value)) {
+            case 'true': return true;
+            case 'false': return false;
+            case 'null': return null;
+        }
+
+        return $value;
+    }
+}
+
+// end filesystem
+
+
+// start csrf 
+
+if (!function_exists('csrf_token')) {
+    function csrf_token(): string
+    {
+        return \Careminate\Sessions\Session::get('csrf_token');
+    }
+}
+
+if (!function_exists('csrf')) {
+    function csrf(): string
+    {
+        $token = \Careminate\Sessions\Session::get('csrf_token');
+        return '<input type="hidden" name="_token" value="' . $token . '" />';
+    }
+}
+
+// end csrf

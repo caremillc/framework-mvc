@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-namespace Careminate\Http\Resquests;
+namespace Careminate\Http\Requests;
 
 class Request extends FileRequest
 {
